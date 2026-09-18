@@ -1,0 +1,12 @@
+raw_id,region,status,units,unit_cost,note
+mos-000,east,paused,9,20,standard
+mos-001,west,active,12,31,standard
+mos-002,central,active,15,13,standard
+mos-003,north,paused,18,24,standard
+mos-004,south,active,4,6,standard
+mos-005,east,active,7,17,standard
+mos-006,west,paused,10,28,standard
+mos-007,central,active,13,10,standard
+mos-008,north,active,16,21,standard
+mos-009,south,paused,2,32,standard
+mos-010,east,active,5,14,standard

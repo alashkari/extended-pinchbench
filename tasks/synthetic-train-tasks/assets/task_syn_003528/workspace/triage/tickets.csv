@@ -1,0 +1,8 @@
+ticket,severity,owner
+T003528-0,low,ari
+T003528-1,normal,bea
+T003528-2,high,cam
+T003528-3,low,dev
+T003528-4,normal,ari
+T003528-5,high,bea
+T003528-6,low,cam

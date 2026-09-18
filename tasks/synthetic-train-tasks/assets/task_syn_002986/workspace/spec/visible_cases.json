@@ -1,0 +1,45 @@
+{
+  "behavior": "Implement `transform_records(records)`. Keep records whose status is `active` and score is at least 46. Return dictionaries with uppercase `code` and `bucket`, where bucket is `priority` when the score is at least 66, otherwise `watch`. Sort by code.",
+  "visible_cases": [
+    {
+      "expected": [
+        {
+          "bucket": "watch",
+          "code": "AA"
+        }
+      ],
+      "input": [
+        {
+          "code": "aa",
+          "score": 46,
+          "status": "active"
+        },
+        {
+          "code": "bb",
+          "score": 71,
+          "status": "paused"
+        }
+      ]
+    },
+    {
+      "expected": [
+        {
+          "bucket": "priority",
+          "code": "CC"
+        }
+      ],
+      "input": [
+        {
+          "code": "cc",
+          "score": 76,
+          "status": "active"
+        },
+        {
+          "code": "dd",
+          "score": 45,
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

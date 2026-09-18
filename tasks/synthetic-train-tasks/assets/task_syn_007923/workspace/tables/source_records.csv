@@ -1,0 +1,11 @@
+raw_id,region,status,units,unit_cost,note
+key-000,east,paused,3,9,standard
+key-001,west,active,6,20,standard
+key-002,central,active,9,31,standard
+key-003,north,paused,12,13,standard
+key-004,south,active,15,24,standard
+key-005,east,active,18,6,standard
+key-006,west,paused,4,17,standard
+key-007,central,active,7,28,standard
+key-008,north,active,10,10,standard
+key-009,south,paused,13,21,standard

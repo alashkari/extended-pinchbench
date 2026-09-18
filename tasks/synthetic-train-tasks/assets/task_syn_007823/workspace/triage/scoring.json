@@ -1,0 +1,5 @@
+{
+  "high_severity_multiplier": 3,
+  "low_severity_multiplier": 1,
+  "normal_severity_multiplier": 2
+}

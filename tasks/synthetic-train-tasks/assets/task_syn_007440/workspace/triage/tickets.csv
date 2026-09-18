@@ -1,0 +1,10 @@
+ticket,severity,owner
+T007440-0,low,ari
+T007440-1,normal,bea
+T007440-2,high,cam
+T007440-3,low,dev
+T007440-4,normal,ari
+T007440-5,high,bea
+T007440-6,low,cam
+T007440-7,normal,dev
+T007440-8,high,ari

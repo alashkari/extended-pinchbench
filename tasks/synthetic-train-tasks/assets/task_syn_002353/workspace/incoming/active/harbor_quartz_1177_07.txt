@@ -1,0 +1,4 @@
+record 7 for customer migration in harbor-quartz-1177
+status=active
+signal=keep
+detail detail detail detail detail detail detail detail detail detail detail detail detail 

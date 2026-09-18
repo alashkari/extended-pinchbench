@@ -1,0 +1,4 @@
+record 6 for customer migration in ripple-keystone-3709
+status=active
+signal=review
+detail detail detail detail detail detail detail detail detail detail detail detail 

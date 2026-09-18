@@ -1,0 +1,12 @@
+raw_id,region,status,units,unit_cost,note
+ony-000,north,paused,2,20,standard
+ony-001,south,active,5,31,standard
+ony-002,east,active,8,13,standard
+ony-003,west,paused,11,24,standard
+ony-004,central,active,14,6,standard
+ony-005,north,active,17,17,standard
+ony-006,south,paused,3,28,standard
+ony-007,east,active,6,10,standard
+ony-008,west,active,9,21,standard
+ony-009,central,paused,12,32,standard
+ony-010,north,active,15,14,standard

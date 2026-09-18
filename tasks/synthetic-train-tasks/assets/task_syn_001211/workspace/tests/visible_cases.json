@@ -1,0 +1,42 @@
+[
+  {
+    "expected": [
+      {
+        "bucket": "watch",
+        "code": "AA"
+      }
+    ],
+    "input": [
+      {
+        "code": "aa",
+        "score": 46,
+        "status": "active"
+      },
+      {
+        "code": "bb",
+        "score": 71,
+        "status": "paused"
+      }
+    ]
+  },
+  {
+    "expected": [
+      {
+        "bucket": "priority",
+        "code": "CC"
+      }
+    ],
+    "input": [
+      {
+        "code": "cc",
+        "score": 76,
+        "status": "active"
+      },
+      {
+        "code": "dd",
+        "score": 45,
+        "status": "active"
+      }
+    ]
+  }
+]

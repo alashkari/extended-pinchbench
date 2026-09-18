@@ -1,0 +1,4 @@
+record 7 for knowledge-base upkeep in delta-summit-3253
+status=active
+signal=keep
+detail detail detail detail detail detail detail detail detail detail detail detail detail detail detail 

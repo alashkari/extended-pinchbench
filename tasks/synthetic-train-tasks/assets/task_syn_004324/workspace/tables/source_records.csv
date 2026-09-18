@@ -1,0 +1,12 @@
+raw_id,region,status,units,unit_cost,note
+emb-000,east,paused,8,20,standard
+emb-001,west,active,11,31,standard
+emb-002,central,active,14,13,standard
+emb-003,north,paused,17,24,standard
+emb-004,south,active,3,6,standard
+emb-005,east,active,6,17,standard
+emb-006,west,paused,9,28,standard
+emb-007,central,active,12,10,standard
+emb-008,north,active,15,21,standard
+emb-009,south,paused,18,32,standard
+emb-010,east,active,4,14,standard

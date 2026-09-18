@@ -2,15 +2,15 @@
 
 set -euo pipefail
 
-export LLM_MODEL="<provider/model-name>"        # model identifier passed to the runner
-export BASE_URL="http://<host>:<port>/v1"       # OpenAI-compatible endpoint of your LLM server
-export API_KEY="<your-api-key>"                 # API key ("EMPTY" is fine for a local server)
+export LLM_MODEL="local-qwen-gguf/Qwen3.6-27B-Q6_K"        # model identifier passed to the runner
+export BASE_URL="http://127.0.0.1:36201/v1"                # OpenAI-compatible endpoint of your LLM server
+export API_KEY="EMPTY"                                     # API key ("EMPTY" is fine for a local server)
 
 # Automated tasks (10 per category).
 AUTO_PRODUCTIVITY_TASKS="task_recurring_event_ics,task_timezone_meeting_ics,task_conflict_detect_calendar,task_priority_inbox_sort,task_standup_notes_format,task_deadline_countdown,task_meeting_room_booking,task_expense_receipt_log,task_habit_streak_tracker,task_weekly_agenda_builder"
 AUTO_RESEARCH_TASKS="task_ticker_compare_msft_googl,task_company_hq_lookup,task_python_release_date,task_timezone_offset_lookup,task_currency_pair_snapshot,task_open_source_license_lookup,task_rfc_title_lookup,task_package_latest_version_format,task_country_capital_batch,task_conference_cfp_deadline_format"
 AUTO_WRITING_TASKS="task_apology_email_draft,task_changelog_from_commits,task_json_to_user_story,task_meeting_invite_email,task_error_message_rewrite,task_api_endpoint_docs,task_tweet_thread_split,task_press_release_boilerplate,task_sop_checklist_writer,task_release_notes_semver"
-AUTO_CODING_TASKS="task_json_schema_validator_script,task_csv_to_sqlite_loader,task_retry_decorator_impl,task_url_shortener_map,task_log_parser_regex,task_env_config_loader,task_markdown_toc_generator,task_fix_rate_limiter,task_diff_two_json,task_makefile_phony_targets"
+AUTO_CODING_TASKS="task_json_schema_validator_script,task_csv_to_sqlite_loader,task_retry_decorator_impl,task_url_shortener_map,task_log_parser_regex,task_env_config_loader,task_markdown_toc_generator,task_token_rate_limiter,task_diff_two_json,task_makefile_phony_targets"
 AUTO_ANALYSIS_TASKS="task_invoice_total_reconcile,task_survey_likert_summary,task_funnel_conversion_calc,task_sla_breach_report,task_budget_vs_actual,task_duplicate_customer_detect,task_word_frequency_topn,task_http_status_breakdown,task_unit_conversion_batch,task_ab_test_lift"
 AUTO_CSV_ANALYSIS_TASKS="task_csv_apple_max_drawdown,task_csv_apple_best_month,task_csv_iris_feature_means,task_csv_iris_sepals_ratio,task_csv_temp_hottest_year,task_csv_gdp_top5_africa,task_csv_cities_midwest_count,task_csv_stations_coldest,task_csv_pension_median,task_csv_life_exp_delta_china"
 AUTO_LOG_ANALYSIS_TASKS="task_log_apache_unique_clients,task_log_nginx_top_paths,task_log_nginx_4xx_rate,task_log_ssh_root_attempts,task_log_ssh_geo_like_ip_groups,task_log_syslog_oom_events,task_log_hdfs_warn_count,task_log_mapreduce_killed_tasks,task_log_apache_mod_security_hits,task_log_nginx_peak_minute"
@@ -41,13 +41,14 @@ parse_run_type() {
   local run_type="${1:-}"
 
   usage() {
-    echo "Usage: $0 <auto|hybrid|new|full|test>"
+    echo "Usage: $0 <auto|hybrid|new|full|synthetic-train|test>"
     echo
-    echo "  auto    automated-only suite"
-    echo "  hybrid  22 hybrid tasks (0.7 auto / 0.3 LLM)"
-    echo "  new     all 132 new tasks (110 automated + 22 hybrid)"
-    echo "  full    full suite (all)"
-    echo "  test    smoke test (task_sanity suite)"
+    echo "  auto             automated-only suite"
+    echo "  hybrid           22 hybrid tasks (0.7 auto / 0.3 LLM)"
+    echo "  new              all 132 new tasks (110 automated + 22 hybrid)"
+    echo "  full             full suite (all)"
+    echo "  synthetic-train  1000 sampled synthetic router corpus tasks"
+    echo "  test             smoke test (task_sanity suite)"
   }
 
   if [[ -z "${run_type}" ]]; then
@@ -57,7 +58,7 @@ parse_run_type() {
   fi
 
   case "${run_type}" in
-    test|auto|full|easy|hybrid|new)
+    test|auto|full|easy|hybrid|new|synthetic-train)
       RUN_TYPE="${run_type}"
       ;;
     -h|--help)
@@ -72,21 +73,23 @@ parse_run_type() {
   esac
 }
 
-setup_skill() {
-  local script_dir skill_dir new_tasks_dir auto_tasks_dir hybrid_tasks_dir
+ensure_skill_repo() {
+  local script_dir="$1"
+  local skill_dir="$2"
   local pinchbench_skill_repo="https://github.com/pinchbench/skill"
-  local -a new_task_files
-
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  skill_dir="${script_dir}/skill"
-  new_tasks_dir="${script_dir}/tasks"
-  auto_tasks_dir="${new_tasks_dir}/auto"
-  hybrid_tasks_dir="${new_tasks_dir}/hybrid"
 
   if [[ ! -d "${skill_dir}" ]]; then
     echo "skill/ not found; cloning ${pinchbench_skill_repo} ..."
     git clone "${pinchbench_skill_repo}" "${skill_dir}"
   fi
+}
+
+setup_extended_tasks() {
+  local skill_dir="$1"
+  local new_tasks_dir="$2"
+  local auto_tasks_dir="${new_tasks_dir}/auto"
+  local hybrid_tasks_dir="${new_tasks_dir}/hybrid"
+  local -a new_task_files
 
   if [[ ! -d "${auto_tasks_dir}" ]]; then
     echo "Error: auto tasks directory not found: ${auto_tasks_dir}" >&2
@@ -107,6 +110,59 @@ setup_skill() {
   cp -f "${new_task_files[@]}" "${skill_dir}/tasks/"
   cp -f "${new_tasks_dir}/manifest.yaml" "${skill_dir}/tasks/manifest.yaml"
   echo "Copied ${#new_task_files[@]} task files and manifest.yaml."
+}
+
+setup_synthetic_train_tasks() {
+  local skill_dir="$1"
+  local new_tasks_dir="$2"
+  local synth_dir="${new_tasks_dir}/synthetic-train-tasks"
+  local synth_assets_dir="${synth_dir}/assets"
+  local -a synth_task_files
+
+  if [[ ! -d "${synth_dir}" ]]; then
+    echo "Error: synthetic-train tasks directory not found: ${synth_dir}" >&2
+    exit 1
+  fi
+  if [[ ! -f "${synth_dir}/manifest.yaml" ]]; then
+    echo "Error: synthetic-train manifest not found: ${synth_dir}/manifest.yaml" >&2
+    exit 1
+  fi
+  if [[ ! -d "${synth_assets_dir}" ]]; then
+    echo "Error: synthetic-train assets directory not found: ${synth_assets_dir}" >&2
+    exit 1
+  fi
+
+  echo "Copying synthetic-train tasks into skill/tasks/ ..."
+  shopt -s nullglob
+  synth_task_files=("${synth_dir}"/task_syn_*.md)
+  if ((${#synth_task_files[@]} == 0)); then
+    echo "Error: no task_syn_*.md files found in ${synth_dir}" >&2
+    exit 1
+  fi
+  cp -f "${synth_task_files[@]}" "${skill_dir}/tasks/"
+  cp -f "${synth_dir}/manifest.yaml" "${skill_dir}/tasks/manifest.yaml"
+  echo "Copied ${#synth_task_files[@]} synthetic task files and manifest.yaml."
+
+  echo "Copying synthetic-train assets into skill/assets/ ..."
+  mkdir -p "${skill_dir}/assets"
+  cp -a "${synth_assets_dir}/." "${skill_dir}/assets/"
+  echo "Copied synthetic-train assets."
+}
+
+setup_skill() {
+  local script_dir skill_dir new_tasks_dir
+
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  skill_dir="${script_dir}/skill"
+  new_tasks_dir="${script_dir}/tasks"
+
+  ensure_skill_repo "${script_dir}" "${skill_dir}"
+
+  if [[ "${RUN_TYPE}" == "synthetic-train" ]]; then
+    setup_synthetic_train_tasks "${skill_dir}" "${new_tasks_dir}"
+  else
+    setup_extended_tasks "${skill_dir}" "${new_tasks_dir}"
+  fi
 
   SKILL_DIR="${skill_dir}"
 }
@@ -161,12 +217,14 @@ main() {
   cd "${SKILL_DIR}"
 
   case "${RUN_TYPE}" in
-    auto)   run_benchmark automated "${AUTO_TASK_SUITE}" 0 1 ;;
-    easy)   run_benchmark easy "${EASY_TASK_SUITE}" 1 0 ;;
-    hybrid) run_benchmark hybrid "${HYBRID_TASK_SUITE}" 1 0 ;;
-    new)    run_benchmark new "${NEW_TASK_SUITE}" 1 0 ;;
-    full)   run_benchmark full all 1 0 ;;
-    test)   run_benchmark smoke task_sanity 0 1 ;;
+    auto)             run_benchmark automated "${AUTO_TASK_SUITE}" 0 1 ;;
+    easy)             run_benchmark easy "${EASY_TASK_SUITE}" 1 0 ;;
+    hybrid)           run_benchmark hybrid "${HYBRID_TASK_SUITE}" 1 0 ;;
+    new)              run_benchmark new "${NEW_TASK_SUITE}" 1 0 ;;
+    full)             run_benchmark full all 1 0 ;;
+    # Mix of automated / hybrid / llm_judge tasks; judge required for non-automated.
+    synthetic-train)  run_benchmark synthetic-train synthetic_train 1 0 ;;
+    test)             run_benchmark smoke task_sanity 0 1 ;;
   esac
 }
 

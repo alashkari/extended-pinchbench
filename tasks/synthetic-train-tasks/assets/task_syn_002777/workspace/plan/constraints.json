@@ -1,0 +1,59 @@
+{
+  "tasks": [
+    {
+      "depends_on": [],
+      "duration": 2,
+      "owner": "ari",
+      "task": "A"
+    },
+    {
+      "depends_on": [
+        "A"
+      ],
+      "duration": 3,
+      "owner": "bea",
+      "task": "B"
+    },
+    {
+      "depends_on": [
+        "B"
+      ],
+      "duration": 4,
+      "owner": "cam",
+      "task": "C"
+    },
+    {
+      "depends_on": [
+        "C"
+      ],
+      "duration": 1,
+      "owner": "ari",
+      "task": "D"
+    },
+    {
+      "depends_on": [
+        "D"
+      ],
+      "duration": 2,
+      "owner": "bea",
+      "task": "E"
+    },
+    {
+      "depends_on": [
+        "E"
+      ],
+      "duration": 3,
+      "owner": "cam",
+      "task": "F"
+    },
+    {
+      "depends_on": [
+        "F"
+      ],
+      "duration": 4,
+      "owner": "ari",
+      "task": "G"
+    }
+  ],
+  "workday_start": 9
+}

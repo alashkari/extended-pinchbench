@@ -1,0 +1,10 @@
+{
+  "deprecated": [
+    "cleanup"
+  ],
+  "enabled_modules": [
+    "ingest",
+    "export",
+    "audit"
+  ]
+}
